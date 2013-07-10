@@ -18,35 +18,40 @@ import javax.swing.JTextField;
 //-------------------------------------------------------------------------------------------------------
 public class Racing extends JFrame {
 
-	int width = 600; 	// Breite des Fensters
-	int height = 800; 	// Höhe des Fensters
+	int width = 600; // Breite des Fensters
+	int height = 800; // Höhe des Fensters
 
 	RacingPanel rpanel; // erstellen eines neuen Panels rpanel
 	JTextField score;
 
-	int step = 0; 		// Geschwindigkeit der Animation
+	int step = 0; // Geschwindigkeit der Animation
 
 	public static void main(String[] args) {
 		Racing wnd = new Racing();
 	}
 
 	public Racing() {
-		setSize(width, height); 							// setzte Fenstergröße fest
-		setTitle("Das ultimativ langweilige Rennspiel"); 	// setze den Titel
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 	// setze X auf Close
+		setSize(width, height); // setzte Fenstergröße fest
+		setTitle("Das ultimativ langweilige Rennspiel"); // setze den Titel
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // setze X auf Close
 
-		rpanel = new RacingPanel(this); 					// initialisieren des Panels rpanel
+		rpanel = new RacingPanel(this); // initialisieren des Panels rpanel
 
-		Container cpane = getContentPane(); 				// erstellen eines Containers
-		cpane.setLayout(new BorderLayout()); 				// und zuweisen eines Standard-Layouts
-		cpane.add(rpanel, BorderLayout.CENTER); 			// added das rpanel zum Container (mittig)
+		Container cpane = getContentPane(); // erstellen eines Containers
+		cpane.setLayout(new BorderLayout()); // und zuweisen eines
+												// Standard-Layouts
+		cpane.add(rpanel, BorderLayout.CENTER); // added das rpanel zum
+												// Container (mittig)
 
-		JButton startbutton = new JButton("Start"); 		// erstellen des Startbuttons mit Aufschrift "start"
-		cpane.add(startbutton, BorderLayout.WEST); 			// added den button rechts an den Container
-		startbutton.resetKeyboardActions(); 				// resetet alle Keys
-		
+		JButton startbutton = new JButton("Start"); // erstellen des
+													// Startbuttons mit
+													// Aufschrift "start"
+		cpane.add(startbutton, BorderLayout.WEST); // added den button rechts an
+													// den Container
+		startbutton.resetKeyboardActions(); // resetet alle Keys
+
 		score = new JTextField("0");
-		cpane.add(score,BorderLayout.NORTH);
+		cpane.add(score, BorderLayout.NORTH);
 
 		// Keylistener für Pfeiltasten
 		addKeyListener(new KeyAdapter() {
@@ -80,22 +85,23 @@ public class Racing extends JFrame {
 			}
 		});
 
-		pack(); 						// "verpackt" das Frame
-		setVisible(true); 				// zeige die Komponenten an
+		pack(); // "verpackt" das Frame
+		setVisible(true); // zeige die Komponenten an
 
-		Thread t = new Thread(rpanel); 	// rpanel wird zu einem seperierten
+		Thread t = new Thread(rpanel); // rpanel wird zu einem seperierten
 										// Thread
-		t.start(); 						// startet den Thread
+		t.start(); // startet den Thread
 	}
-	
-	public void setScore(String score){
+
+	public void setScore(String score) {
 		this.score.setText(score);
 	}
-	
-	public int getCyclePos(){
-		return this.rpanel.y;			// liefert den y-Wert vom Fahrradfahrer
+
+	public int getCyclePosY() {
+		return this.rpanel.y; // liefert den y-Wert vom Fahrradfahrer
 	}
 }
+
 // -------------------------------------------------------------------------------------------------------
 
 // Racing Panel
@@ -104,15 +110,15 @@ class RacingPanel extends JPanel implements Runnable {
 	Racing rc;
 	int offset = 0;
 	int streckenlaenge = 8000;
-	int y = 300; 	// die vertikale Position des Fahrradfahrers
-	
+	int y = 300; // die vertikale Position des Fahrradfahrers
+
 	boolean start = false;
 	int x2 = 0;
-	
+
 	int points = 0;
-	
+
 	int y1 = 0, y2 = 0;
-	
+
 	// Konstruktor
 	RacingPanel(Racing racing) {
 		Bilder.init(this);
@@ -122,60 +128,76 @@ class RacingPanel extends JPanel implements Runnable {
 
 	// Malt alle Graphiken
 	public void paint(Graphics g) {
-		g.setColor(Color.blue);					//färbt den Hintergrund blau
+		g.setColor(Color.blue); // färbt den Hintergrund blau
 		Dimension d = getSize();
 		g.fillRect(0, 0, d.width, d.height);
 		for (int i = 0; i < d.width; i++) {
-			//int y1 = 0, y2 = 0;
+			// int y1 = 0, y2 = 0;
 			// g.setColor(Color.green);
 			double x = (Math.PI * 2.0 * (offset + i)) / streckenlaenge;
-			g.setColor(new Color((int) (140 + 115 * Math.sin(2 * x)),(int) (140 + 115 * Math.sin(x)), (int) (140 + 115 * Math
+			g.setColor(new Color((int) (140 + 115 * Math.sin(2 * x)),
+					(int) (140 + 115 * Math.sin(x)), (int) (140 + 115 * Math
 							.sin(3 * x))));
 			y1 = (int) (300 + 200 * Math.sin(2 * x) * Math.cos(3 * x));
 			y2 = y1 + 200;
 			g.drawLine(i, y1, i, y2);
 		}
 
-		//das Fahrrad kann nun gezeichnet werden
+		// das Fahrrad kann nun gezeichnet werden
 		Bilder.zeichneBild(this, g, 0, 10, y);
 		
-		int og = (int) (300 + 200 * Math.sin(2 * (Math.PI * 2.0 * (offset + (10+Bilder.bildBreite[0]-d.width))) / streckenlaenge) * Math.cos(3 * (Math.PI * 2.0 * (offset + (10+Bilder.bildBreite[0]-d.width))) / streckenlaenge));
+		double x = (Math.PI * 2.0 * (offset + (10.0 + Bilder.bildBreite[0])))/ streckenlaenge;
+		int og = (int) (300 + 200 * Math.sin(2 * x) * Math.cos(3 * x))- Bilder.bildHoehe[0];
 		int ug = og + 200;
 		
-		System.out.println("Position: " + rc.getCyclePos());		
-				
-		//Punkte zählen
-		if(rc.getCyclePos() >= og && rc.getCyclePos() <= ug){
-			System.out.println("drin" + og + " " +ug);
-			points = points + rc.step;
-			rc.setScore("Punkte: "+points);
-		}else{
-			System.out.println("draußen" + og + " " +ug);
-		}
+		int xPosOfCycle = 10+Bilder.bildBreite[0];
 		
-		//solange der Biker vor dem x wert von visible bleibt ist er sichtbar
-		int visible = 0-Bilder.bildBreite[1];
+		g.fillOval(xPosOfCycle, rc.getCyclePosY()+Bilder.bildHoehe[0]/2, 10, 10);
 		
-		//Wenn der Biker noch nicht fährt oder außerhalb des Bildes ist,
-		if (start == false  || x2<=visible) {
-			this.x2 = d.width - Bilder.bildBreite[1] - 10;	//dann setze ihn auf diese Position
-			this.start = true;
-		//Wenn der Biker schon fährt, so verschiebe ihn
-		} else {
-			this.x2 = x2 - 2 * rc.step;	//2-mal schneller damit es aussieht als wenn er fährt
-		}
-		
-		//Variablen zum berechnen der Position des Bikers
+		// Variablen zum berechnen der Position des Bikers
 		double xBike = (Math.PI * 2.0 * (offset + x2)) / streckenlaenge;
 		int yBike = (int) (300 + 200 * Math.sin(2 * xBike)* Math.cos(3 * xBike));
-		
-		//Mottorradfahrer zeichnen
-		Bilder.zeichneBild(this, g, 1, x2,yBike);
 
-		//um Probleme mit dem KeyEvents der Buttons zu vermeiden
+		// Punkte zählen
+		if (rc.getCyclePosY()>= og && rc.getCyclePosY()<= ug) {
+			points = points + rc.step;
+			rc.setScore("Punkte: " + points);
+		}
+		
+		if (xPosOfCycle>=x2) {
+			if (rc.getCyclePosY() + Bilder.bildHoehe[0] / 2 <= yBike+ Bilder.bildHoehe[1] && rc.getCyclePosY() + Bilder.bildHoehe[0] / 2 >= yBike) {
+				System.out.println("Treffer");
+				rc.setScore("Punkte: "+0);
+			} else {
+				System.out.println("Vorbei");
+			}
+		}else{
+			System.out.println(xPosOfCycle+","+x2);
+		}
+		
+		// solange der Biker vor dem x wert von visible bleibt ist er sichtbar
+		int visible = 0 - Bilder.bildBreite[1];
+
+		// Wenn der Biker noch nicht fährt oder außerhalb des Bildes ist,
+		if (start == false || x2 <= visible) {
+			this.x2 = d.width - Bilder.bildBreite[1] - 10; // dann setze ihn auf
+															// diese Position
+			this.start = true;
+			// Wenn der Biker schon fährt, so verschiebe ihn
+		} else {
+			this.x2 = x2 - 2 * rc.step; // 2-mal schneller damit es aussieht als
+										// wenn er fährt
+		}
+
+
+		// Mottorradfahrer zeichnen
+		Bilder.zeichneBild(this, g, 1, x2, yBike);
+		
+		g.fillOval(x2, yBike, 10, 10);
+
+		// um Probleme mit dem KeyEvents der Buttons zu vermeiden
 		rc.requestFocusInWindow();
 	}
-	
 
 	public void run() {
 		int speed = 10;
@@ -186,8 +208,9 @@ class RacingPanel extends JPanel implements Runnable {
 			last = now;
 			try {
 				Thread.sleep(delay);
-			} catch (Exception e) {}
-			
+			} catch (Exception e) {
+			}
+
 			repaint();
 
 			// Die horizontale Position des Bildausschnitts wird um eins
@@ -232,19 +255,23 @@ class Bilder {
 				}
 			}
 
-			bild[id] = img; 								// speichert bilder im Array
-			bildHoehe[id] = bild[id].getHeight(panel); 		// speichert Bildhöhe im Array
-			bildBreite[id] = bild[id].getWidth(panel); 		// speichert Bildbreite im Array
+			bild[id] = img; // speichert bilder im Array
+			bildHoehe[id] = bild[id].getHeight(panel); // speichert Bildhöhe im
+														// Array
+			bildBreite[id] = bild[id].getWidth(panel); // speichert Bildbreite
+														// im Array
 		}
 	}
 
 	// paint-Methode
 	// x, y sind die Koordinaten der linken oberen Ecke!
-	public static void zeichneBild(JPanel panel, Graphics g, int id, int x, int y) {
-		if (bild[id] == null) { 			// wenn Bild nicht geladen
-			init(panel); 					// so lade nochmals alles
+	public static void zeichneBild(JPanel panel, Graphics g, int id, int x,
+			int y) {
+		if (bild[id] == null) { // wenn Bild nicht geladen
+			init(panel); // so lade nochmals alles
 		}
-		g.drawImage(bild[id], x, y, panel);	// anschließend male das Bild aufs Panel
+		g.drawImage(bild[id], x, y, panel); // anschließend male das Bild aufs
+											// Panel
 	}
 }
 // -------------------------------------------------------------------------------------------------------
