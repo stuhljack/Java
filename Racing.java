@@ -38,16 +38,11 @@ public class Racing extends JFrame {
 		rpanel = new RacingPanel(this); 					// initialisieren des Panels rpanel
 
 		Container cpane = getContentPane(); 				// erstellen eines Containers
-		cpane.setLayout(new BorderLayout()); 				// und zuweisen eines
-															// Standard-Layouts
-		cpane.add(rpanel, BorderLayout.CENTER); 			// added das rpanel zum
-															// Container (mittig)
+		cpane.setLayout(new BorderLayout()); 				// und zuweisen eines Standard-Layouts
+		cpane.add(rpanel, BorderLayout.CENTER); 			// added das rpanel zum Container (mittig)
 
-		JButton startbutton = new JButton("Start"); 		// erstellen des
-															// Startbuttons mit
-															// Aufschrift "start"
-		cpane.add(startbutton, BorderLayout.WEST); 			// added den button rechts an
-															// den Container
+		JButton startbutton = new JButton("Start"); 		// erstellen des Startbuttons mit Aufschrift "start"
+		cpane.add(startbutton, BorderLayout.WEST); 			// added den button rechts an den Container
 		startbutton.resetKeyboardActions(); 				// resetet alle Keys
 		
 		score = new JTextField("0");
@@ -238,10 +233,8 @@ class Bilder {
 			}
 
 			bild[id] = img; 								// speichert bilder im Array
-			bildHoehe[id] = bild[id].getHeight(panel); 		// speichert Bildhöhe im
-															// Array
-			bildBreite[id] = bild[id].getWidth(panel); 		// speichert Bildbreite
-															// im Array
+			bildHoehe[id] = bild[id].getHeight(panel); 		// speichert Bildhöhe im Array
+			bildBreite[id] = bild[id].getWidth(panel); 		// speichert Bildbreite im Array
 		}
 	}
 
