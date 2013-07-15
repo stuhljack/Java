@@ -4,275 +4,199 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
-//MAIN
-//-------------------------------------------------------------------------------------------------------
+
 public class Racing extends JFrame {
 
-	int width = 600; // Breite des Fensters
-	int height = 800; // Höhe des Fensters
+        /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+		int width=600;  // Breite des Fensters
+        int height=800; // H�he des Fensters
+        
+        RacingPanel rpanel;
+        boolean isStarted = false;
+        int score = 0;
+        
+        JLabel scoreLabel;
+        
+        int step=0; // Geschwindigkeit der Animation
 
-	RacingPanel rpanel; // erstellen eines neuen Panels rpanel
-	JTextField score;
+        public static void main(String[] args) { @SuppressWarnings("unused")
+		Racing wnd = new Racing(); }
 
-	int step = 0; // Geschwindigkeit der Animation
+        public Racing() {
+          setSize(width,height); 
+          setTitle("Das ultimativ langweilige Rennspiel");
+          setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	public static void main(String[] args) {
-		Racing wnd = new Racing();
-	}
+          rpanel=new RacingPanel(this);
+          scoreLabel = new JLabel("Score: "+score);
+          Container cpane=getContentPane();
+          cpane.setLayout(new BorderLayout());
+          cpane.add(rpanel,BorderLayout.CENTER);
+          cpane.add(scoreLabel,BorderLayout.NORTH);
+          JButton startbutton = new JButton("Start");
+          cpane.add(startbutton,BorderLayout.WEST);
+          startbutton.resetKeyboardActions();
 
-	public Racing() {
-		setSize(width, height); // setzte Fenstergröße fest
-		setTitle("Das ultimativ langweilige Rennspiel"); // setze den Titel
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // setze X auf Close
+          addKeyListener(new KeyAdapter() {
+                           public void keyPressed(KeyEvent e) {
+                               if (e.getKeyCode()==KeyEvent.VK_DOWN) {
+                                   // Aktion, wenn "Pfeil nach unten" gedr�ckt
+                                   rpanel.yFahrrad=rpanel.yFahrrad+4; }
+                               if (e.getKeyCode()==KeyEvent.VK_UP) {
+                                   // Aktion, wenn "Pfeil nach oben" gedr�ckt
+                                  rpanel.yFahrrad=rpanel.yFahrrad-4; }
+                           } } );
 
-		rpanel = new RacingPanel(this); // initialisieren des Panels rpanel
+          startbutton.addActionListener(new ActionListener()
+           { public void actionPerformed(ActionEvent e){
+                   if (step==0) { step=1; ((JButton)e.getSource()).setText("Stop"); isStarted = true;}
+                    else { step=0; ((JButton)e.getSource()).setText("Start"); isStarted = false;} } } );
+                              
+          pack();
+          setVisible(true);
 
-		Container cpane = getContentPane(); // erstellen eines Containers
-		cpane.setLayout(new BorderLayout()); // und zuweisen eines
-												// Standard-Layouts
-		cpane.add(rpanel, BorderLayout.CENTER); // added das rpanel zum
-												// Container (mittig)
-
-		JButton startbutton = new JButton("Start"); // erstellen des
-													// Startbuttons mit
-													// Aufschrift "start"
-		cpane.add(startbutton, BorderLayout.WEST); // added den button rechts an
-													// den Container
-		startbutton.resetKeyboardActions(); // resetet alle Keys
-
-		score = new JTextField("0");
-		cpane.add(score, BorderLayout.NORTH);
-
-		// Keylistener für Pfeiltasten
-		addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				// wenn Pfeil nach unten gedrückt
-				if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-					rpanel.y = rpanel.y + 10;
-				} // bewege rpanel runter
-
-				// wenn Pfeil nach oben gedrückt
-				if (e.getKeyCode() == KeyEvent.VK_UP) {
-					rpanel.y = rpanel.y - 10;
-				} // bewege rpanel nach oben
-			}
-		});
-
-		// Listener für den Startbutton
-		startbutton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// wenn Button auf 0 steht, so startet er das Spiel
-				if (step == 0) {
-					step = 1;
-					((JButton) e.getSource()).setText("Stop");
-				}
-
-				// wenn Button auf 1 steht, so stoppt er das Spiel
-				else {
-					step = 0;
-					((JButton) e.getSource()).setText("Start");
-				}
-			}
-		});
-
-		pack(); // "verpackt" das Frame
-		setVisible(true); // zeige die Komponenten an
-
-		Thread t = new Thread(rpanel); // rpanel wird zu einem seperierten
-										// Thread
-		t.start(); // startet den Thread
-	}
-
-	public void setScore(String score) {
-		this.score.setText(score);
-	}
-
-	public int getCyclePosY() {
-		return this.rpanel.y; // liefert den y-Wert vom Fahrradfahrer
-	}
+          Thread t=new Thread(rpanel);
+          t.start(); }
 }
 
-// -------------------------------------------------------------------------------------------------------
-
-// Racing Panel
-// -------------------------------------------------------------------------------------------------------
 class RacingPanel extends JPanel implements Runnable {
+      /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Racing rc;
-	int offset = 0;
-	int streckenlaenge = 8000;
-	int y = 300; // die vertikale Position des Fahrradfahrers
+      int offset=0;
+      int streckenlaenge=8000;
+      int yFahrrad =300; // die vertikale Position des Fahrradfahrers
+      int xFahrrad = 10;
+      int yMotorrad = 300;
+      int xMotorrad = 300;
+      
+      boolean MotorradIsVisible = false;
+      boolean sameX;
+      boolean collison = false;
+      boolean insideStreet;
+      int y1=0,y2=0;
+      
 
-	boolean start = false;
-	int x2 = 0;
+      RacingPanel(Racing racing){
+          Bilder.init(this);
+    	  rc=racing;
+          setPreferredSize(new Dimension(rc.width,rc.height)); }
 
-	int points = 0;
+  
+      public void paint(Graphics g) {
+         g.setColor(Color.blue);
+         Dimension d=getSize();
+         g.fillRect(0,0,d.width,d.height);
+         for(int i=0; i<d.width; i++) {
+           double x= (Math.PI*2.0*(offset+i))/streckenlaenge;
+           g.setColor(new Color((int)(140+115*Math.sin(2*x)),
+        		   				(int)(140+115*Math.sin(x)),
+        		   				(int)(140+115*Math.sin(3*x))));
+           g.setColor(Color.green);
+           y1=(int) (300+200*Math.sin(2*x)*Math.cos(3*x));
+           y2= y1 +200;
+           g.drawLine(i,y1,i,y2); }
 
-	int y1 = 0, y2 = 0;
-
-	// Konstruktor
-	RacingPanel(Racing racing) {
-		Bilder.init(this);
-		rc = racing;
-		setPreferredSize(new Dimension(rc.width, rc.height));
-	}
-
-	// Malt alle Graphiken
-	public void paint(Graphics g) {
-		g.setColor(Color.blue); // färbt den Hintergrund blau
-		Dimension d = getSize();
-		g.fillRect(0, 0, d.width, d.height);
-		for (int i = 0; i < d.width; i++) {
-			// int y1 = 0, y2 = 0;
-			// g.setColor(Color.green);
-			double x = (Math.PI * 2.0 * (offset + i)) / streckenlaenge;
-			g.setColor(new Color((int) (140 + 115 * Math.sin(2 * x)),
-					(int) (140 + 115 * Math.sin(x)), (int) (140 + 115 * Math
-							.sin(3 * x))));
-			y1 = (int) (300 + 200 * Math.sin(2 * x) * Math.cos(3 * x));
-			y2 = y1 + 200;
-			g.drawLine(i, y1, i, y2);
+         double xanfang = (Math.PI*2.0*(offset+Bilder.bildBreite[0]+10))/streckenlaenge;
+         int yanfangOben = (int) (300+200*Math.sin(2*xanfang)*Math.cos(3*xanfang));
+         int yanfangUnten = yanfangOben+200;
+         g.setColor(Color.black);
+         
+         // das Fahrrad kann nun gezeichnet werden
+         Bilder.zeichneBild(this,g,0,xFahrrad,yFahrrad);
+         
+         Point fahrradUnten = new Point(xFahrrad+Bilder.bildBreite[0], yFahrrad+Bilder.bildHoehe[0]);
+         Point fahrradOben = new Point(xFahrrad+Bilder.bildBreite[0], yFahrrad);
+         
+         MotorradIsVisible = xMotorrad >= 5;
+         if (!MotorradIsVisible) {
+        	 yMotorrad = (int) (y1+ Math.random()*200 - Bilder.bildHoehe[1]);
+        	 xMotorrad = d.width;
+         }else{
+			xMotorrad = d.width -(offset % d.width);
+			
 		}
+         Bilder.zeichneBild(this,g,1,xMotorrad,yMotorrad);
 
-		// das Fahrrad kann nun gezeichnet werden
-		Bilder.zeichneBild(this, g, 0, 10, y);
-		
-		double x = (Math.PI * 2.0 * (offset + (10.0 + Bilder.bildBreite[0])))/ streckenlaenge;
-		int og = (int) (300 + 200 * Math.sin(2 * x) * Math.cos(3 * x))- Bilder.bildHoehe[0];
-		int ug = og + 200;
-		
-		int xPosOfCycle = 10+Bilder.bildBreite[0];
-		
-		g.fillOval(xPosOfCycle, rc.getCyclePosY()+Bilder.bildHoehe[0]/2, 10, 10);
-		
-		// Variablen zum berechnen der Position des Bikers
-		double xBike = (Math.PI * 2.0 * (offset + x2)) / streckenlaenge;
-		int yBike = (int) (300 + 200 * Math.sin(2 * xBike)* Math.cos(3 * xBike));
+         Point MotorradOben = new Point(xMotorrad, yMotorrad);
+         Point MotorradUnten = new Point(xMotorrad, yMotorrad+Bilder.bildHoehe[1]);
+            
+         sameX= fahrradOben.x > MotorradOben.x; 
+         
+         collison = (((fahrradOben.y < MotorradOben.y) && (fahrradUnten.y > MotorradOben.y))||( (fahrradUnten.y > MotorradUnten.y) && (fahrradOben.y < MotorradUnten.y )));
+         
+         insideStreet = ((fahrradUnten.y < yanfangUnten)&&( fahrradUnten.y > yanfangOben));
+         
+         if (rc.isStarted&&insideStreet)
+        	 rc.score++;
+         if (collison&&sameX&&rc.isStarted)
+         	 rc.score = 0;
+         
+         rc.scoreLabel.setText("Score: "+rc.score);
+         // um Probleme mit dem KeyEvents der Buttons zu vermeiden
+         rc.requestFocusInWindow(); }
 
-		// Punkte zählen
-		if (rc.getCyclePosY()>= og && rc.getCyclePosY()<= ug) {
-			points = points + rc.step;
-			rc.setScore("Punkte: " + points);
-		}
-		
-		if (xPosOfCycle>=x2) {
-			if (rc.getCyclePosY() + Bilder.bildHoehe[0] / 2 <= yBike+ Bilder.bildHoehe[1] && rc.getCyclePosY() + Bilder.bildHoehe[0] / 2 >= yBike) {
-				System.out.println("Treffer");
-				rc.setScore("Punkte: "+0);
-			} else {
-				System.out.println("Vorbei");
-			}
-		}else{
-			System.out.println(xPosOfCycle+","+x2);
-		}
-		
-		// solange der Biker vor dem x wert von visible bleibt ist er sichtbar
-		int visible = 0 - Bilder.bildBreite[1];
+      public void run() {
+         int speed=10;
+         long now,last=System.currentTimeMillis();
+         while(true) {
+            now=System.currentTimeMillis();
+            long delay=(long)speed-(now-last);
+            last=now;
+            try { Thread.sleep(delay); } catch (Exception e)  { }
+            repaint();
 
-		// Wenn der Biker noch nicht fährt oder außerhalb des Bildes ist,
-		if (start == false || x2 <= visible) {
-			this.x2 = d.width - Bilder.bildBreite[1] - 10; // dann setze ihn auf
-															// diese Position
-			this.start = true;
-			// Wenn der Biker schon fährt, so verschiebe ihn
-		} else {
-			this.x2 = x2 - 2 * rc.step; // 2-mal schneller damit es aussieht als
-										// wenn er fährt
-		}
-
-
-		// Mottorradfahrer zeichnen
-		Bilder.zeichneBild(this, g, 1, x2, yBike);
-		
-		g.fillOval(x2, yBike, 10, 10);
-
-		// um Probleme mit dem KeyEvents der Buttons zu vermeiden
-		rc.requestFocusInWindow();
-	}
-
-	public void run() {
-		int speed = 10;
-		long now, last = System.currentTimeMillis();
-		while (true) {
-			now = System.currentTimeMillis();
-			long delay = (long) speed - (now - last);
-			last = now;
-			try {
-				Thread.sleep(delay);
-			} catch (Exception e) {
-			}
-
-			repaint();
-
-			// Die horizontale Position des Bildausschnitts wird um eins
-			// "weitergeschoben":
-			offset = offset + rc.step;
-			if (offset >= streckenlaenge)
-				offset = 0;
-		}
-	}
+            // Die horizontale Position des Bildausschnitts wird um eins "weitergeschoben":
+            offset=offset+rc.step;
+            if (offset>=streckenlaenge) offset=0; }
+      }    
 }
 
-// -------------------------------------------------------------------------------------------------------
 
-// Bilder
-// -------------------------------------------------------------------------------------------------------
-class Bilder {
-	static int bilderzahl = 3; // anzahl von Bildern
-	static Image bild[] = new Image[bilderzahl]; // speichert bilder im Array
-	static int bildHoehe[] = new int[bilderzahl]; // speichert Bildhöhe im Array
-	static int bildBreite[] = new int[bilderzahl]; // speichert Bildbreite im
-													// Array
-
-	// speichert die Namen der Bilder im Array
-	static String bildName[] = new String[] { "bike1.gif", "motorbike2.gif",
-			"motorbike1.gif" };
-
-	static ClassLoader cl = Bilder.class.getClassLoader(); // läd alle Bilder
-
-	// Laden aller Bilder in ein Array
-	public static void init(JPanel panel) {
-		for (int id = 0; id < bilderzahl; id++) {
-			// läd er in die Variable img das entsprechende Bild
-			Image img = panel.getToolkit().getImage(
-					cl.getResource(bildName[id]));
-			// läd das Image vor um Zeit zu sparen
-			panel.prepareImage(img, panel);
-
-			while ((panel.checkImage(img, panel) & ImageObserver.WIDTH) != ImageObserver.WIDTH) {
-				try {
-					Thread.sleep(50);
-				} catch (Exception e) {
-				}
-			}
-
-			bild[id] = img; // speichert bilder im Array
-			bildHoehe[id] = bild[id].getHeight(panel); // speichert Bildhöhe im
-														// Array
-			bildBreite[id] = bild[id].getWidth(panel); // speichert Bildbreite
-														// im Array
-		}
-	}
-
-	// paint-Methode
-	// x, y sind die Koordinaten der linken oberen Ecke!
-	public static void zeichneBild(JPanel panel, Graphics g, int id, int x,
-			int y) {
-		if (bild[id] == null) { // wenn Bild nicht geladen
-			init(panel); // so lade nochmals alles
-		}
-		g.drawImage(bild[id], x, y, panel); // anschließend male das Bild aufs
-											// Panel
-	}
+class Bilder
+{
+    static int bilderzahl=3;
+    static Image bild[]=new Image[bilderzahl];
+    static int bildHoehe[]= new int[bilderzahl];
+    static int bildBreite[]= new int[bilderzahl];
+    static String bildName[] = new String[]{"bike1.gif", "motorbike2.gif", "motorbike1.gif"};
+    static ClassLoader cl = Bilder.class.getClassLoader();
+	
+    public static void init(JPanel panel)
+     { for(int id=0; id<bilderzahl; id++) {    	
+        Image img=panel.getToolkit().getImage(cl.getResource(bildName[id]));
+        panel.prepareImage(img, panel);
+        while ((panel.checkImage(img, panel) & ImageObserver.WIDTH) != ImageObserver.WIDTH) {
+              try { Thread.sleep(50); } catch(Exception e) { } }
+        bild[id]=img;
+        bildHoehe[id]=bild[id].getHeight(panel);
+        bildBreite[id]=bild[id].getWidth(panel); }
+     }
+    
+    /* x, y sind die Koordinaten der linken oberen Ecke! */
+    public static void zeichneBild(JPanel panel,  Graphics g, int id, int x, int y) {
+       if (bild[id]==null) init(panel);
+       g.drawImage(bild[id],x,y, panel); }
 }
-// -------------------------------------------------------------------------------------------------------
+
+
+
+
 
